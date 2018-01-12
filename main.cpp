@@ -19,7 +19,8 @@ int main(int argc, char *argv[]) {
     MMU mmu("backing_store.bin");
     address_t address;
     while(fin >> address) {
-        cout << address << " " << mmu.get_value(address);
+        cout << address << " -> " << mmu.get_value(address) << endl;
     }
+
     return 0;
 }
