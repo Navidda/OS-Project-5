@@ -18,7 +18,7 @@ private:
 			index_t frame;
 	};
 
-	Entry entries[PAGE_TABLE_ENTRIES];
+	Entry entries[TLB_ENTRIES];
 	int first_out;
 
 };

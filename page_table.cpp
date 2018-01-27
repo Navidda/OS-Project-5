@@ -16,7 +16,7 @@ int TLB::get_replacement_pos() {
 
 pair<index_t, int> TLB::get_frame(index_t index) {
 	pair<index_t, int> res;
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < TLB_ENTRIES; i++) {
 		if (entries[i].page == index) {
 			res = make_pair(entries[i].frame, 1);
 			return res;
