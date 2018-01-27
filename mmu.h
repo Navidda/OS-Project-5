@@ -12,8 +12,7 @@ address_t assemble_address(index_t index, offset_t offset);
 class TLB {
 public:
 	TLB();
-	bool is_available(index_t index);
-	index_t get_frame(index_t index);
+	std::pair<index_t, int> get_frame(index_t index);
 	void set_frame(index_t index, index_t frame);
 	int get_replacement_pos();
 private:
@@ -24,7 +23,7 @@ private:
 	};
 
 	Entry entries[PAGE_TABLE_ENTRIES];
-	queue<int> fifo;
+	int first_out;
 
 };
 

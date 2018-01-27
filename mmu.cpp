@@ -9,34 +9,31 @@ using namespace std;
 
 TLB::TLB() {
 	memset(entries, 0, sizeof entries);
-	for (int i = 0; i < 16; i++) { 
-		fifo.push(i);
-	}
-}
-
-bool TLB::is_available(index_t index) {
-
+	first_out = 0;
 }
 
 int TLB::get_replacement_pos() {
-	int pos = fifo.front();
-	fifo.pop();
+	int pos = first_out % TLB_ENTRIES;
 	return pos;
 }
 
-index_t TLB::get_frame(index_t index) {
+pair<index_t, int> TLB::get_frame(index_t index) {
+	pair<index_t, int> res;
 	for (int i = 0; i < 16; i++) {
 		if (entries[i].page == index) {
-			return entries[i].frame;
+			res = make_pair(entries[i].frame, 1);
+			return res;
 		}
 	}
-	return TLB_MISS;
+	res = make_pair(0, -1);
+	return res;
 }
 
 void TLB::set_frame(index_t page, index_t frame) {
 	int pos = get_replacement_pos();
 	entries[pos].page = page;
 	entries[pos].frame = frame;
+	first_out++;
 }
 
 PageTable::PageTable() {
@@ -89,9 +86,14 @@ void MMU::fetch_page_from_disk(index_t page_index) {
 
 byte MMU::get_value(address_t logical_address) {
     index_t page_index = extract_index(logical_address), frame_index;
-    if (!pg_table.is_valid(page_index))
-        fetch_page_from_disk(page_index);
-    frame_index = pg_table.get_frame(page_index);
+	pair<index_t, int> tlb_res = tlb.get_frame(page_index);
+	frame_index = tlb_res.first;
+	if (tlb_res.second == TLB_MISS) {
+		if (!pg_table.is_valid(page_index))
+        	fetch_page_from_disk(page_index);
+		frame_index = pg_table.get_frame(page_index);
+		tlb.set_frame(page_index, frame_index);
+	}
     offset_t offset = extract_offset(logical_address);
     byte res = memory.read(frame_index, offset);
     return res;
