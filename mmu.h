@@ -1,6 +1,8 @@
 #ifndef __MMU__
 #define __MMU__
 
+#include "page_table.h"
+#include "memory.h"
 #include "memtypes.h"
 
 #include <string>
@@ -10,50 +12,6 @@
 index_t extract_index(address_t address);
 offset_t extract_offset(address_t address);
 address_t assemble_address(index_t index, offset_t offset);
-
-class TLB {
-public:
-	TLB();
-	std::pair<index_t, int> get_frame(index_t index);
-	void set_frame(index_t index, index_t frame);
-	int get_replacement_pos();
-private:
-	class Entry {
-		public:
-			index_t page;
-			index_t frame;
-	};
-
-	Entry entries[PAGE_TABLE_ENTRIES];
-	int first_out;
-
-};
-
-class PageTable {
-public:
-    PageTable();
-    bool is_valid(index_t index);
-    index_t get_frame(index_t index);
-    void set_frame(index_t index, index_t frame);
-	void invalidate(index_t frame_index);
-private:
-    class Entry {
-    public:
-        index_t frame;
-        bool valid;
-    };
-
-    Entry entries[PAGE_TABLE_ENTRIES]; 
-};
-
-class Memory {
-public:
-    Memory();
-    byte read(index_t index, offset_t offset);
-    void write_frame(index_t frame_index, byte *data);
-private:
-    byte data[FRAME_NUM][FRAME_SIZE];
-};
 
 class MMU {
 public:
