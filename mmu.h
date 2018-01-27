@@ -3,6 +3,7 @@
 
 #include "memtypes.h"
 #include <string>
+#include <queue>
 
 index_t extract_index(address_t address);
 offset_t extract_offset(address_t address);
@@ -10,6 +11,20 @@ address_t assemble_address(index_t index, offset_t offset);
 
 class TLB {
 public:
+	TLB();
+	bool is_available(index_t index);
+	index_t get_frame(index_t index);
+	void set_frame(index_t index, index_t frame);
+	int get_replacement_pos();
+private:
+	class Entry {
+		public:
+			index_t page;
+			index_t frame;
+	};
+
+	Entry entries[PAGE_TABLE_ENTRIES];
+	queue<int> fifo;
 
 };
 

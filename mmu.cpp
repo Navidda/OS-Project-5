@@ -7,6 +7,38 @@
 
 using namespace std;
 
+TLB::TLB() {
+	memset(entries, 0, sizeof entries);
+	for (int i = 0; i < 16; i++) { 
+		fifo.push(i);
+	}
+}
+
+bool TLB::is_available(index_t index) {
+
+}
+
+int TLB::get_replacement_pos() {
+	int pos = fifo.front();
+	fifo.pop();
+	return pos;
+}
+
+index_t TLB::get_frame(index_t index) {
+	for (int i = 0; i < 16; i++) {
+		if (entries[i].page == index) {
+			return entries[i].frame;
+		}
+	}
+	return TLB_MISS;
+}
+
+void TLB::set_frame(index_t page, index_t frame) {
+	int pos = get_replacement_pos();
+	entries[pos].page = page;
+	entries[pos].frame = frame;
+}
+
 PageTable::PageTable() {
     memset(entries, 0, sizeof entries);
 }

@@ -1,6 +1,8 @@
 #ifndef __MEMTYPES__
 #define __MEMTYPES__
 
+#define TLB_MISS -1
+
 const int PAGE_TABLE_ENTRIES = 256;
 const int PAGE_SIZE = 256;
 const int TLB_ENTRIES = 16;
