@@ -3,7 +3,6 @@
 
 #include "memtypes.h"
 #include <string>
-// #include <set>
 
 index_t extract_index(address_t address);
 offset_t extract_offset(address_t address);
@@ -27,7 +26,7 @@ private:
         bool valid;
     };
 
-    Entry entries[PAGE_TABLE_SIZE]; 
+    Entry entries[PAGE_TABLE_ENTRIES]; 
 };
 
 class Memory {
@@ -38,7 +37,7 @@ public:
 private:
     // set <index_t> free_pages;
     index_t first_empty;
-    byte data[MEMORY_SIZE][PAGE_SIZE];
+    byte data[FRAME_NUM][FRAME_SIZE];
 };
 
 class MMU {

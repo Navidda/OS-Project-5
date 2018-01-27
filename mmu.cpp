@@ -1,7 +1,9 @@
 #include "mmu.h"
+
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <cstring>
 
 using namespace std;
 
