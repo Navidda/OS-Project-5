@@ -8,7 +8,7 @@
 using namespace std;
 
 TLB::TLB() {
-	memset(entries, 0, sizeof entries);
+	memset(entries, -1, sizeof entries);
 	first_out = 0;
 }
 
