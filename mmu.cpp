@@ -37,37 +37,54 @@ address_t assemble_address(index_t index, offset_t offset) {
     return (res << 8) + offset;
 }
 
-MMU::MMU(string swap_file): swap_file(swap_file) {}
+MMU::MMU(const string &swap_file): swap_file(swap_file) {}
 
-void MMU::fetch_page_from_disk(index_t index) {
-    cerr << "fetching\n";
+void MMU::fetch_page_from_disk(index_t page_index) {
+    cerr << "fetching" << endl;
+
     ifstream fin(swap_file.c_str());
-    fin.seekg(PAGE_SIZE * index, fin.beg);
+    fin.seekg(PAGE_SIZE * page_index, fin.beg);
     byte *data = new byte[PAGE_SIZE];
     for (int i = 0; i < PAGE_SIZE; i ++)
         data[i] = fin.get();
-    index_t physical_index = memory.write_frame(data);
-    pg_table.set_frame(index, physical_index);
+
+	index_t frame_index = get_frame_index();
+    memory.write_frame(frame_index, data);
+    pg_table.set_frame(page_index, frame_index);
+
     delete[] data;
 }
 
 byte MMU::get_value(address_t logical_address) {
-    index_t logical_index = extract_index(logical_address), physical_index;
-    if (!pg_table.is_valid(logical_index))
-        fetch_page_from_disk(logical_index);
-    physical_index = pg_table.get_frame(logical_index);
+    index_t page_index = extract_index(logical_address), frame_index;
+    if (!pg_table.is_valid(page_index))
+        fetch_page_from_disk(page_index);
+    frame_index = pg_table.get_frame(page_index);
     offset_t offset = extract_offset(logical_address);
-    byte res = memory.read(physical_index, offset);
+    byte res = memory.read(frame_index, offset);
     return res;
 }
 
-byte Memory::read(index_t index, offset_t offset) {
-    return data[index][offset];
+byte Memory::read(index_t frame_index, offset_t offset) {
+    return data[frame_index][offset];
 }
 
-index_t Memory::write_frame(byte *frame_data) {
-    memcpy(data[first_empty], frame_data, PAGE_SIZE);
-    return first_empty ++;
+void Memory::write_frame(index_t frame_index, byte *frame_data) {
+    memcpy(data[frame_index], frame_data, PAGE_SIZE);
 }
 
-Memory::Memory(): first_empty(0) {};
+Memory::Memory() {};
+
+FIFO_MMU::FIFO_MMU(const string &swap_file): MMU(swap_file), first_index(0) {}
+
+index_t FIFO_MMU::get_frame_index() {
+	int res = first_index;
+	first_index = (first_index + 1) % FRAME_NUM;
+	return first_index;
+}
+
+MMU* MMUFactory::NewMMU(const string &swap_file, const string &pg_replace_method) {
+	if (pg_replace_method == "fifo")
+		return new FIFO_MMU(swap_file);
+	return NULL;
+}

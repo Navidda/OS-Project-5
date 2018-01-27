@@ -33,24 +33,39 @@ class Memory {
 public:
     Memory();
     byte read(index_t index, offset_t offset);
-    index_t write_frame(byte *data);
+    void write_frame(index_t frame_index, byte *data);
 private:
-    // set <index_t> free_pages;
-    index_t first_empty;
     byte data[FRAME_NUM][FRAME_SIZE];
 };
 
 class MMU {
 public:
-    MMU(std::string swap_file);
+    MMU(const std::string &swap_file);
     byte get_value(address_t logical_address);
-private:
+protected:
     void fetch_page_from_disk(index_t index);
-    Memory memory;
+    address_t get_physical_address(address_t logical_address);
+
+	virtual index_t get_frame_index() = 0; // for page replacement
+
+	Memory memory;
     PageTable pg_table;
     TLB tlb;
-    std::string swap_file;    
-    address_t get_physical_address(address_t logical_address);
+    std::string swap_file;
+};
+
+class FIFO_MMU : public MMU {
+public:
+	FIFO_MMU(const std::string &swap_file);
+protected:
+	index_t get_frame_index();
+
+	index_t first_index;
+};
+
+class MMUFactory {
+public:
+	static MMU *NewMMU(const std::string &swap_file, const std::string &pg_replace_method);
 };
 
 #endif

@@ -16,11 +16,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    MMU mmu("backing_store.bin");
-    address_t address;
-    while(fin >> address) {
-        cout << address << " -> " << mmu.get_value(address) << endl;
-    }
+	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "fifo");
+	address_t address;
+	while(fin >> address) {
+		cout << address << " -> " << mmu->get_value(address) << endl;
+	}
 
     return 0;
 }
