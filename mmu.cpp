@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <cstdlib>
 
 using namespace std;
 
@@ -53,6 +54,14 @@ void PageTable::set_frame(index_t index, index_t frame) {
     entries[index].valid = 1;
 }
 
+void PageTable::invalidate(index_t frame_index) {
+	for (int i = 0; i < PAGE_TABLE_ENTRIES; i++) {
+		if (entries[i].frame == frame_index) {
+			entries[i].valid = 0;
+		}
+	}
+}
+
 index_t extract_index(address_t address) {
     return (index_t) (address >> 8);
 }
@@ -66,7 +75,10 @@ address_t assemble_address(index_t index, offset_t offset) {
     return (res << 8) + offset;
 }
 
-MMU::MMU(const string &swap_file): swap_file(swap_file) {}
+MMU::MMU(const string &swap_file): swap_file(swap_file) {
+	for (int i = 0; i < FRAME_NUM; i++)
+		free_frames.insert(i);
+}
 
 void MMU::fetch_page_from_disk(index_t page_index) {
     cerr << "fetching" << endl;
@@ -77,17 +89,22 @@ void MMU::fetch_page_from_disk(index_t page_index) {
     for (int i = 0; i < PAGE_SIZE; i ++)
         data[i] = fin.get();
 
-	index_t frame_index = get_frame_index();
-    memory.write_frame(frame_index, data);
+	index_t frame_index = get_frame_index();	
+	memory.write_frame(frame_index, data);
+	
+	pg_table.invalidate(frame_index);
+	// TODO TLB
+    free_frames.erase(frame_index);
+
     pg_table.set_frame(page_index, frame_index);
 
     delete[] data;
 }
 
 byte MMU::get_value(address_t logical_address) {
-    index_t page_index = extract_index(logical_address), frame_index;
+    index_t page_index = extract_index(logical_address);
 	pair<index_t, int> tlb_res = tlb.get_frame(page_index);
-	frame_index = tlb_res.first;
+	index_t frame_index = tlb_res.first;
 	if (tlb_res.second == TLB_MISS) {
 		if (!pg_table.is_valid(page_index))
         	fetch_page_from_disk(page_index);
@@ -117,8 +134,36 @@ index_t FIFO_MMU::get_frame_index() {
 	return first_index;
 }
 
+index_t RandomReplaceMMU::get_frame_index() {
+	int res = rand() % FRAME_NUM;
+	return res;
+}
+
+LRU_MMU::LRU_MMU(const string &swap_file): MMU(swap_file) {
+	memset(last_use, 0, sizeof last_use);
+}
+
+index_t LRU_MMU::get_frame_index() {
+	if (free_frames.size() > 0)
+		return *free_frames.begin();
+	// TODO	
+}
+
+SecondChanceMMU::SecondChanceMMU(const string &swap_file): MMU(swap_file) {
+	pos = 0;
+	memset(refrence, 0, sizeof refrence);
+}
+
+index_t SecondChanceMMU::get_frame_index() {
+	if (free_frames.size() > 0)
+		return *free_frames.begin();
+	// TODO
+}
+
 MMU* MMUFactory::NewMMU(const string &swap_file, const string &pg_replace_method) {
 	if (pg_replace_method == "fifo")
 		return new FIFO_MMU(swap_file);
+	if (pg_replace_method == "random_replace")
+		return new RandomReplaceMMU(swap_file);
 	return NULL;
 }
