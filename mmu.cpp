@@ -8,6 +8,10 @@
 
 using namespace std;
 
+int tlb_hits = 0;
+int page_faults = 0;
+double overhead = 0;
+
 index_t extract_index(address_t address) {
     return (index_t) (address >> 8);
 }
@@ -48,6 +52,9 @@ void MMU::fetch_page_from_disk(index_t page_index) {
 
     pg_table.set_frame(page_index, frame_index);
 
+	overhead += 250000;
+	overhead += 100;
+
     delete[] data;
 }
 
@@ -56,16 +63,23 @@ byte MMU::get_value(address_t logical_address) {
 	pair<index_t, int> tlb_res = tlb.get_frame(page_index);
 	index_t frame_index = tlb_res.first;
 	if (tlb_res.second == TLB_MISS) {
-		if (!pg_table.is_valid(page_index))
+		if (!pg_table.is_valid(page_index)){
         	fetch_page_from_disk(page_index);
+			page_faults++;
+		}
 		frame_index = pg_table.get_frame(page_index);
 		tlb.set_frame(page_index, frame_index);
 	}
+	else
+		tlb_hits++;
+
     offset_t offset = extract_offset(logical_address);
     byte res = memory.read(frame_index, offset);
 
 	last_use[frame_index] = cnt++;
 	refrence[frame_index] = 1;
+	overhead += 0.5;
+	overhead += 100;
 
     return res;
 }
