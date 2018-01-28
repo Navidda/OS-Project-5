@@ -24,14 +24,14 @@ int main(int argc, char *argv[]) {
 
 	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "fifo");
 	address_t address;
-	while(fin >> address) {
+	while (fin >> address) {
 		cout << address << " -> " << mmu->get_value(address) << endl;
 		number_of_entries++;
 	}
 
 	cout << "Page Fault = " << ((double)page_faults/(double)number_of_entries) * 100 << "%" << endl;
-	cout << "Hit Ratio = " << ((double)tlb_hits/(double)number_of_entries) * 100 << "%" << endl;
-	cout << "Overhead = " << overhead << "ns" << endl;
+	cout << "TLB Hit Ratio = " << ((double)tlb_hits/(double)number_of_entries) * 100 << "%" << endl;
+	cout << "Overhead = " << overhead << " ns" << endl;
 
     return 0;
 }
