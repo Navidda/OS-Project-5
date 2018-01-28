@@ -47,7 +47,7 @@ void MMU::fetch_page_from_disk(index_t page_index) {
 	memory.write_frame(frame_index, data);
 	
 	pg_table.invalidate(frame_index);
-	// TODO TLB
+	tlb.invalidate(frame_index);
     free_frames.erase(frame_index);
 
     pg_table.set_frame(page_index, frame_index);

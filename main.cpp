@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
 	int number_of_entries = 0;
 
-	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "fifo");
+	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "lru");
 	address_t address;
 	while (fin >> address) {
 		cout << address << " -> " << mmu->get_value(address) << endl;
