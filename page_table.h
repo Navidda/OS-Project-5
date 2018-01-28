@@ -9,8 +9,9 @@ class TLB {
 public:
 	TLB();
 	std::pair<index_t, int> get_frame(index_t index);
-	void set_frame(index_t index, index_t frame);
 	int get_replacement_pos();
+	void set_frame(index_t index, index_t frame);
+	void invalidate(index_t frame_index);
 private:
 	class Entry {
 		public:

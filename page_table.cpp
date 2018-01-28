@@ -33,6 +33,14 @@ void TLB::set_frame(index_t page, index_t frame) {
 	first_out++;
 }
 
+void TLB::invalidate(index_t frame_index) {
+	for (int i = 0; i < TLB_ENTRIES; i++) {
+		if (entries[i].frame == frame_index) {
+			entries[i].page = -1;
+		}
+	}
+}
+
 PageTable::PageTable() {
     memset(entries, 0, sizeof entries);
 }
