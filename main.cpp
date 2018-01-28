@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "fifo");
+	MMU *mmu = MMUFactory::NewMMU("backing_store.bin", "second_chance");
 	address_t address;
 	while(fin >> address) {
 		cout << address << " -> " << mmu->get_value(address) << endl;

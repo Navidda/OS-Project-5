@@ -24,12 +24,13 @@ protected:
 	virtual index_t get_frame_index() = 0; // for page replacement
 	std::set<index_t> free_frames;
 
+	int cnt, last_use[FRAME_NUM];
+	bool refrence[FRAME_NUM];
+
 	Memory memory;
     PageTable pg_table;
     TLB tlb;
     std::string swap_file;
-
-	int cnt;
 };
 
 class FIFO_MMU : public MMU {
@@ -53,8 +54,6 @@ public:
 	LRU_MMU(const std::string &swap_file);
 protected:
 	index_t get_frame_index();
-	
-	int last_use[FRAME_NUM];
 };
 
 class SecondChanceMMU : public MMU {
@@ -64,7 +63,6 @@ protected:
 	index_t get_frame_index();
 
 	index_t pos;
-	bool refrence[FRAME_NUM];
 };
 
 class MMUFactory {
